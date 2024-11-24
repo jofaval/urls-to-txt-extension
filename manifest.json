@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Save Tabs to TXT",
+  "version": "1.0",
+  "description": "Save every tab's URL and title to a TXT file.",
+  "permissions": [
+	"tabs",
+	"activeTab",
+	"downloads"
+  ],
+  "background": {
+	"service_worker": "background.js"
+  },
+  "action": {
+	"default_popup": "popup.html"
+  }
+}
