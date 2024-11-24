@@ -21,7 +21,11 @@ document.getElementById("saveButton").addEventListener("click", () => {
     const blob = new Blob([textAreaContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
 
-    const date = new Date().toISOString().replace(/[-:.]/g, "_").replace("T", "-").split(".")[0];
+    const date = new Date()
+      .toISOString()
+      .replace(/[-:.]/g, "_")
+      .replace("T", "-")
+      .split(".")[0];
     const filename = `tabs-${date}.txt`;
 
     chrome.downloads.download({
@@ -33,4 +37,21 @@ document.getElementById("saveButton").addEventListener("click", () => {
 
 document.getElementById("resetButton").addEventListener("click", () => {
   loadContent();
+});
+
+document.getElementById("openTabsButton").addEventListener("click", () => {
+  const urls = document
+    .getElementById("tabsInfo")
+    .value.split("\n")
+    .filter((url) => url.trim() !== "" && url.startsWith("http"));
+
+  chrome.tabs.query({}, (tabs) => {
+    const openUrls = tabs.map((tab) => tab.url);
+
+    urls.forEach((url) => {
+      if (!openUrls.includes(url)) {
+        chrome.tabs.create({ url });
+      }
+    });
+  });
 });
