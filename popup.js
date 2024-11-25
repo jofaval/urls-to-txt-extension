@@ -1,57 +1,51 @@
 function loadContent() {
   chrome.tabs.query({}, (tabs) => {
-    let content = "";
-
-    tabs.forEach((tab) => {
-      content += `${tab.title}\n${tab.url}\n\n`;
-    });
+    const content = tabs.map((tab) => `${tab.title}\n${tab.url}\n\n`).join("");
 
     document.getElementById("tabsInfo").value = content;
   });
 }
 
-(() => {
-  loadContent();
-})();
+document.addEventListener("DOMContentLoaded", loadContent);
+document.getElementById("resetButton").addEventListener("click", loadContent);
+
+/**
+ * @returns {string}
+ */
+function getFilename() {
+  const date = new Date()
+    .toISOString()
+    .replace(/[-:.]/g, "_")
+    .replace("T", "-")
+    .split(".")[0];
+
+  return `tabs-${date}.txt`;
+}
 
 document.getElementById("saveButton").addEventListener("click", () => {
-  chrome.tabs.query({}, () => {
-    const textAreaContent = document.getElementById("tabsInfo").value;
+  const textAreaContent = document.getElementById("tabsInfo").value;
 
-    const blob = new Blob([textAreaContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
+  const blob = new Blob([textAreaContent], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
 
-    const date = new Date()
-      .toISOString()
-      .replace(/[-:.]/g, "_")
-      .replace("T", "-")
-      .split(".")[0];
-    const filename = `tabs-${date}.txt`;
-
-    chrome.downloads.download({
-      url: url,
-      filename: filename,
-    });
-  });
+  chrome.downloads.download({ url, filename: getFilename() });
 });
 
-document.getElementById("resetButton").addEventListener("click", () => {
-  loadContent();
-});
+/**
+ * @param {string} url
+ */
+function validUrl(url) {
+  return url.trim() !== "" && url.startsWith("http");
+}
 
 document.getElementById("openTabsButton").addEventListener("click", () => {
-  const urls = document
-    .getElementById("tabsInfo")
-    .value.split("\n")
-    .filter((url) => url.trim() !== "" && url.startsWith("http"));
+  const textAreaContent = document.getElementById("tabsInfo").value;
+  const urls = textAreaContent.split("\n").filter(validUrl);
 
   chrome.tabs.query({}, (tabs) => {
     const openUrls = tabs.map((tab) => tab.url);
+    const unopenedUrls = urls.filter((url) => !openUrls.includes(url));
 
-    urls.forEach((url) => {
-      if (!openUrls.includes(url)) {
-        chrome.tabs.create({ url });
-      }
-    });
+    unopenedUrls.forEach((url) => chrome.tabs.create({ url }));
   });
 });
