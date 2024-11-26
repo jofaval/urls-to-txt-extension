@@ -13,11 +13,8 @@ document.getElementById("resetButton").addEventListener("click", loadContent);
  * @returns {string}
  */
 function getFilename() {
-  const date = new Date()
-    .toISOString()
-    .replace(/[-:.]/g, "_")
-    .replace("T", "-")
-    .split(".")[0];
+  const now = new Date().toISOString();
+  const date = now.replace(/[-:.]/g, "_").replace("T", "-").split(".")[0];
 
   return `tabs-${date}.txt`;
 }
